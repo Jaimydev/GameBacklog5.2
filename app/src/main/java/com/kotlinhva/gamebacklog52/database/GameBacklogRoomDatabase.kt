@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 
-@Database(entities = [Game::class], version = 1, exportSchema = false)
+@Database(entities = [Game::class], version = 2, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class GameBacklogRoomDatabase : RoomDatabase() {
 
@@ -23,6 +23,7 @@ abstract class GameBacklogRoomDatabase : RoomDatabase() {
 
         @Volatile
         private var INSTANCE: GameBacklogRoomDatabase? = null
+
 
         fun getDatabase(context: Context): GameBacklogRoomDatabase? {
             if (INSTANCE == null) {

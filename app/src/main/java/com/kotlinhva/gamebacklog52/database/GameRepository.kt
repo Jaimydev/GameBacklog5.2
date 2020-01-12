@@ -13,7 +13,7 @@ class GameRepository(context: Context) {
         gameDao = database!!.GameDao()
     }
 
-    fun getGames(): LiveData<List<Game>?> {
+    fun getGames(): LiveData<List<Game>> {
         return gameDao.getGames()
     }
 
@@ -21,4 +21,15 @@ class GameRepository(context: Context) {
         gameDao.updateGame(Game)
     }
 
+    suspend fun deleteGameBacklogItem(Game: Game) {
+        gameDao.deleteGameBacklogItem(Game)
+    }
+
+    suspend fun deleteAllBacklogItems() {
+        gameDao.deleteAllBacklogItems()
+    }
+
+    suspend fun insertGameBacklogItem(Game: Game) {
+        gameDao.insertGame(Game)
+    }
 }

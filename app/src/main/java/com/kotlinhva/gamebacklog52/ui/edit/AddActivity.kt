@@ -1,18 +1,22 @@
 package com.kotlinhva.gamebacklog52.ui.edit
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import com.kotlinhva.gamebacklog52.R
+import com.kotlinhva.gamebacklog52.model.Game
 import kotlinx.android.synthetic.main.activity_edit.*
+import kotlinx.android.synthetic.main.content_edit.*
+import java.lang.Integer.parseInt
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeParseException
 import java.util.*
 
 class AddActivity : AppCompatActivity() {
-
-    private lateinit var addViewModel: AddViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,45 +27,37 @@ class AddActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         initViews()
-        initViewModel()
     }
 
     private fun initViews() {
         fab.setOnClickListener {
-
-            addViewModel.Game.value?.apply {
-             //   title = etTitle.text.toString()
-            //    lastUpdated = Date()
-            //    text = etGame.text.toString()
-            }
-
-            addViewModel.updateGame()
+            saveGame()
         }
     }
 
-    private fun initViewModel() {
-        addViewModel = ViewModelProviders.of(this).get(AddViewModel::class.java)
-        addViewModel.Game.value = intent.extras?.getParcelable(EXTRA_Game)!!
-
-        addViewModel.Game.observe(this, Observer { Game ->
-            if (Game != null) {
-           //     etTitle.setText(Game.title)
-             //   etGame.setText(Game.text)
+    private fun saveGame() {
+        if (isValidGame()) {
+            try {
+                val localDate = getLocalDate()
+                val date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant())
+                val game = Game(
+                    etTitle.text.toString(), etPlatform.text.toString(), date
+                )
+                val resultIntent = Intent()
+                resultIntent.putExtra(EXTRA_GAME, game)
+                setResult(Activity.RESULT_OK, resultIntent)
+                finish()
+            } catch (e: DateTimeParseException) {
+                Toast.makeText(this, getString(R.string.date_invalid_error), Toast.LENGTH_SHORT)
+                    .show()
+                return
             }
-        })
-
-        addViewModel.error.observe(this, Observer { message ->
-            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-        })
-
-        addViewModel.success.observe(this, Observer { success ->
-            if (success) finish()
-        })
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item?.itemId) {
-            android.R.id.home -> { // Used to identify when the user has clicked the back button
+            android.R.id.home -> {
                 finish()
                 true
             }
@@ -69,8 +65,41 @@ class AddActivity : AppCompatActivity() {
         }
     }
 
+    private fun getLocalDate(): LocalDate {
+        val day = parseInt(etDay.text.toString());
+        val month = parseInt(etMonth.text.toString());
+        val year = parseInt(etYear.text.toString());
+
+        return LocalDate.of(year, month, day)
+
+    }
+
+    private fun isValidGame(): Boolean {
+        return when {
+            etTitle.text.toString().isBlank() -> {
+                Toast.makeText(this, getString(R.string.title_invalid_error), Toast.LENGTH_SHORT)
+                    .show()
+                false
+            }
+            etPlatform.text.toString().isBlank() -> {
+                Toast.makeText(
+                    this,
+                    getString(R.string.platform_invalid_error),
+                    Toast.LENGTH_SHORT
+                ).show()
+                false
+            }
+            etDay.text.toString().isBlank() || etMonth.text.toString().isBlank() || etYear.text.toString().isBlank() -> {
+                Toast.makeText(this, getString(R.string.date_invalid_error), Toast.LENGTH_SHORT)
+                    .show()
+                false
+            }
+            else -> true
+        }
+    }
+
     companion object {
-        const val EXTRA_Game = "EXTRA_Game"
+        const val EXTRA_GAME = "EXTRA_GAME"
     }
 
 }
